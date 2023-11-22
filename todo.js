@@ -1,47 +1,57 @@
 let todos = [] // list of todo elements to display
-let todosInLocalStorage = localStorage.getItem('todos') // todos in local storage onload
+const list = document.querySelector('ul') // list of todo elements to display
 
-//* when page loads, load todos from local storage
-window.addEventListener('load', () => {
-  loadTodos()
-})
-
-// add todo to list
-const addTodo = (todo) => {
-  // add todo to todos
-  todos.push(todo)
+//* Functions
+const updateLocalStorage = () => {
   localStorage.setItem('todos', JSON.stringify(todos))
 }
 
-//* get from local storage, create todo elements, append to list
-const loadTodos = () => {
-  // if todosInLocalStorage is null, set to empty array
-  todos = JSON.parse(todosInLocalStorage) || []
-  // create todo elements
-  const todoElements = todos.map((todo) => createToDoElement(todo))
-  // append todo elements to list
-  const list = document.querySelector('ul')
-  todoElements.forEach((todoElement) => list.appendChild(todoElement))
+const render = () => {
+  list.innerHTML = ''
+  todos.forEach((todo) => {
+    const li = document.createElement('li')
+    li.innerHTML = todo
+    list.appendChild(li)
+  })
 }
 
-//* create todo element
-const createToDoElement = (todo) => {
-  const li = document.createElement('li')
-  li.innerHTML = todo
-  return li
+const addTodo = (todo) => {
+  if (todo === '' || todo === null || todo === undefined) {
+    console.log('todo is empty')
+  } else {
+    todos.push(todo)
+    updateLocalStorage()
+    render()
+  }
 }
 
-const addTodoElement = (todo) => {
-  const todoElement = createToDoElement(todo)
-  const list = document.querySelector('ul')
-  list.appendChild(todoElement)
+const removeTodo = (todo) => {
+  todos = todos.filter((t) => t !== todo)
+  updateLocalStorage()
+  render()
 }
 
-//* when pressing button, add todo to list
-const button = document.querySelector('button')
-button.addEventListener('click', () => {
-  const input = document.querySelector('input')
-  const todo = input.value
+const getTodos = () => {
+  const todos = localStorage.getItem('todos')
+  if (todos) {
+    return JSON.parse(todos)
+  } else {
+    return []
+  }
+}
+
+//* Event listeners
+document.querySelector('button').addEventListener('click', (e) => {
+  e.preventDefault()
+  const todo = document.querySelector('input').value
   addTodo(todo)
-  addTodoElement(todo)
+  document.querySelector('input').value = ''
 })
+
+list.addEventListener('click', (e) => {
+  removeTodo(e.target.innerHTML) // removes todo from list (all todos with content (kinda makes sense))
+})
+
+//* Initial render
+todos = getTodos()
+render()
